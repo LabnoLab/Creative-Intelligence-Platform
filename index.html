@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mi Plataforma</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .nota { padding: 10px; margin: 5px; background-color: lightblue; border-radius: 5px; }
+    .nota input { margin: 5px; }
+    button { padding: 5px 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Mi Plataforma</h1>
+  <div>
+    <input type="text" id="textoNota" placeholder="Escribe una nota">
+    <input type="color" id="colorNota" value="#ADD8E6">
+    <input type="text" id="categoriaNota" placeholder="Categoría">
+    <button onclick="agregarNota()">Agregar Nota</button>
+  </div>
+  <div id="listaNotas"></div>
+
+  <!-- Firebase SDK (versión 8.10.1, compatible con enfoque global) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtcYaXxheiiCJqVOu1VRKhdiDuN3BfH1k",
+      authDomain: "creative-intelligence-platform.firebaseapp.com",
+      projectId: "creative-intelligence-platform",
+      storageBucket: "creative-intelligence-platform.firebasestorage.app",
+      messagingSenderId: "668415450306",
+      appId: "1:668415450306:web:cd38724bea22b6e555af5b"
+    };
+
+    // Inicializar Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Cargar notas al iniciar
+    let notas = [];
+    db.collection("notas").onSnapshot((snapshot) => {
+      notas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      mostrarNotas();
+    });
+
+    function agregarNota() {
+      const texto = document.getElementById("textoNota").value;
+      const color = document.getElementById("colorNota").value;
+      const categoria = document.getElementById("categoriaNota").value;
+      if (texto) {
+        db.collection("notas").add({ texto, color, categoria })
+          .then(() => {
+            document.getElementById("textoNota").value = ""; // Limpiar input
+          })
+          .catch((error) => {
+            console.error("Error al agregar nota:", error);
+          });
+      }
+    }
+
+    function mostrarNotas() {
+      const lista = document.getElementById("listaNotas");
+      lista.innerHTML = "";
+      notas.forEach(nota => {
+        const div = document.createElement("div");
+        div.className = "nota";
+        div.style.backgroundColor = nota.color;
+        div.innerHTML = `<strong>${nota.categoria || "Sin categoría"}</strong>: ${nota.texto}`;
+        lista.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
